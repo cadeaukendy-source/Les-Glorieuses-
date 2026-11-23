@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les Glorieuses — Commande en ligne</title>
+<style>
+:root{--ink:#111;--paper:#f7f6f3;--muted:#777;--line:#e5e2dc;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+header{background:#111;color:#fff;padding:17px 5vw;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:5}
+.brand{font-family:Georgia,serif;font-size:25px;letter-spacing:1.5px}.brand small{display:block;font:10px Arial;letter-spacing:3px;color:#bbb;margin-top:3px}
+nav{display:flex;gap:8px}nav button,.outline{background:transparent;border:1px solid #666;color:#fff;padding:9px 13px;border-radius:2px}
+.hero{padding:55px 6vw 45px;background:#171717;color:#fff;position:relative;overflow:hidden}
+.hero:after{content:"LG";position:absolute;right:7vw;top:-30px;font:220px Georgia;color:#242424;pointer-events:none}
+.eyebrow{font-size:11px;letter-spacing:3px;color:#c5bcae;text-transform:uppercase}
+h1{font:clamp(38px,7vw,68px)/1.03 Georgia,serif;max-width:600px;margin:16px 0}
+.hero p{color:#ccc;max-width:470px;line-height:1.6}.hero .cta{background:#fff;color:#111;border:0;padding:13px 20px;margin-top:10px;font-weight:700}
+main{max-width:1150px;margin:auto;padding:35px 5vw 70px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:20px}
+h2{font:32px Georgia,serif;margin:0 0 7px}.sub{color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.product{background:#fff;border:1px solid var(--line);padding:0 0 17px}
+.product-art{height:145px;background:linear-gradient(135deg,#e8e5df,#c9c3b9);display:flex;align-items:center;justify-content:center;font-size:60px;filter:grayscale(1)}
+.product-body{padding:15px 16px 0}.product h3{font:22px Georgia,serif;margin:0 0 7px}.product p{font-size:13px;color:#777;line-height:1.45;min-height:37px;margin:0 0 13px}
+.product-foot{display:flex;align-items:center;justify-content:space-between}.price{font-weight:700}.add{background:#111;color:#fff;border:0;padding:10px 13px}
+.panel{background:#fff;border:1px solid var(--line);padding:20px;margin-top:35px}
+.cart-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.qty button{border:1px solid var(--line);background:#fff;padding:3px 9px;margin:0 5px}
+.total{display:flex;justify-content:space-between;font-weight:700;font-size:19px;padding:18px 0}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d8d5cf;background:#fff;border-radius:0}
+.full{grid-column:1/-1}.primary{background:#111;color:#fff;border:0;padding:13px 18px;font-weight:700}.secondary{background:#fff;border:1px solid #111;color:#111;padding:10px 14px}
+.notice{font-size:12px;color:#777;line-height:1.5}.hidden{display:none!important}
+#admin{display:none}#admin.active{display:block}.admin-card{background:#fff;border:1px solid var(--line);padding:15px;margin:10px 0}
+.status{padding:5px 8px;background:#eee;font-size:11px}
+footer{background:#111;color:#aaa;text-align:center;padding:25px;font-size:12px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:13px 18px;z-index:10;display:none}
+@media(max-width:600px){header{padding:14px 4vw}.brand{font-size:20px}nav button{font-size:11px;padding:8px}.hero{padding:43px 6vw}.hero:after{font-size:140px;right:2vw}.fields{grid-template-columns:1fr}.full{grid-column:auto}.section-head{align-items:start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">LES GLORIEUSES<small>LE GOÛT DE L'ESSENTIEL</small></div>
+  <nav><button onclick="showShop()">La carte</button><button onclick="showAdmin()">Administration</button></nav>
+</header>
+<section class="hero">
+  <div class="eyebrow">Sandwichs · Menus · Livraison</div>
+  <h1>Une pause qui a du goût.</h1>
+  <p>Découvrez notre sélection de sandwichs et menus, préparés avec soin et livrés directement chez vous.</p>
+  <button class="cta" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">DÉCOUVRIR LA CARTE</button>
+</section>
+<main id="shop">
+  <div class="section-head" id="menu"><div><h2>Notre carte</h2><div class="sub">Une sélection simple et généreuse.</div></div><div class="sub" id="cartCount">0 article</div></div>
+  <div class="grid" id="products"></div>
+  <section class="panel" id="checkout">
+    <h2>Votre commande</h2><div class="sub">Ajoutez vos envies au panier. Les modalités de livraison seront convenues par téléphone.</div>
+    <div id="cart"></div>
+    <div class="total"><span>Total</span><span id="total">0,00 €</span></div>
+    <form id="orderForm">
+      <div class="fields">
+        <div><label for="customer">Nom et prénom *</label><input id="customer" required placeholder="Votre nom"></div>
+        <div><label for="phone">Téléphone *</label><input id="phone" required type="tel" placeholder="06…"></div>
+        <div><label for="when">Livraison</label><select id="when"><option>À convenir par téléphone</option><option>Dès que possible</option></select></div>
+        <div><label for="payment">Mode de paiement *</label><select id="payment"><option>Paiement à la livraison</option><option>Paiement en ligne (à confirmer)</option></select></div>
+        <div class="full"><label for="notes">Précisions (facultatif)</label><textarea id="notes" rows="2" placeholder="Code, étage, instructions…"></textarea></div>
+      </div>
+      <p class="notice">Aucun compte ni adresse à saisir. Nous vous contacterons au numéro indiqué pour convenir des modalités de livraison. Le paiement en ligne n'est pas encore connecté : cette option enregistre une demande, sans débiter votre carte.</p>
+      <button class="primary" type="submit">ENVOYER MA COMMANDE</button>
+    </form>
+    <div id="confirmation" class="hidden"></div>
+  </section>
+</main>
+<main id="admin">
+  <div class="section-head"><div><h2>Administration</h2><div class="sub">Espace de gestion local. La consultation des commandes en ligne nécessitera une connexion administrateur sécurisée.</div></div><button class="secondary" onclick="showShop()">Retour à la boutique</button></div>
+  <div class="panel">
+    <h2>Commandes</h2><div id="orders"></div>
+    <p class="notice">Les nouvelles commandes sont envoyées à Firebase. Cet écran local ne permet pas encore de consulter les commandes depuis tous les appareils.</p>
+  </div>
+  <div class="panel">
+    <h2>Modifier la carte</h2><div class="sub">Les changements sont enregistrés localement.</div>
+    <div id="editProducts"></div>
+    <button class="secondary" onclick="addProduct()">+ Ajouter un produit</button>
+  </div>
+</main>
+<footer>LES GLORIEUSES · Commande en ligne<br><span>Une expérience simple, élégante et gourmande.</span></footer>
+<div class="toast" id="toast"></div>
+<script>
+// Configuration publique de l'application Firebase Les Glorieuses.
+const firebaseConfig = {
+  apiKey: "AIzaSyBCn23jnVecGQp5YN_dXkIS-7evZ5N9Jtw",
+  authDomain: "les-glorieuses.firebaseapp.com",
+  projectId: "les-glorieuses",
+  storageBucket: "les-glorieuses.firebasestorage.app",
+  messagingSenderId: "1031266392023",
+  appId: "1:1031266392023:web:5a683260ee87623a69dd92",
+  measurementId: "G-ZJ2T0XS6FZ"
+};
+let firebaseDbPromise;
+async function getFirebaseDb(){
+  if(!firebaseDbPromise){
+    firebaseDbPromise=(async()=>{
+      const {initializeApp}=await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js');
+      const {getFirestore}=await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+      const app=initializeApp(firebaseConfig);
+      return getFirestore(app);
+    })();
+  }
+  return firebaseDbPromise;
+}
+const defaults=[
+{id:1,name:"Panini kebab",desc:"Pain panini, viande kebab et garniture.",price:3.50,emoji:"🥙"},
+{id:2,name:"Panini poulet curry",desc:"Poulet curry dans un pain panini toasté.",price:3.50,emoji:"🥪"},
+{id:3,name:"Menu kebab",desc:"Panini kebab accompagné d'une boisson, sans frites.",price:3.50,emoji:"🥙"},
+{id:4,name:"Menu poulet curry",desc:"Panini poulet curry accompagné d'une boisson, sans frites.",price:3.50,emoji:"🥪"}
+];
+// Les quatre tarifs et descriptions sont harmonisés avec la carte validée.
+let products=JSON.parse(localStorage.getItem("lg_products")||"null")||defaults;
+products=products.map(p=>{const d=defaults.find(x=>x.id===p.id);return d?{...p,price:d.price,desc:d.desc}:p});
+saveProducts();
+let cart={};
+const euro=n=>Number(n).toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
+const saveProducts=()=>localStorage.setItem("lg_products",JSON.stringify(products));
+function renderProducts(){document.getElementById("products").innerHTML=products.map(p=>`<article class="product"><div class="product-art">${p.emoji||"🥪"}</div><div class="product-body"><h3>${esc(p.name)}</h3><p>${esc(p.desc||"")}</p><div class="product-foot"><span class="price">${euro(p.price)}</span><button class="add" onclick="addCart(${p.id})">Ajouter +</button></div></div></article>`).join("");}
+function addCart(id){cart[id]=(cart[id]||0)+1;renderCart();toast("Ajouté au panier");}
+function changeQty(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];renderCart();}
+function renderCart(){let entries=Object.entries(cart).filter(([id,q])=>q>0);let count=entries.reduce((a,[id,q])=>a+q,0),sum=entries.reduce((a,[id,q])=>{let p=products.find(x=>x.id==id);return a+(p?p.price*q:0)},0);document.getElementById("cartCount").textContent=count+" article"+(count>1?"s":"");document.getElementById("cart").innerHTML=entries.length?entries.map(([id,q])=>{let p=products.find(x=>x.id==id);return `<div class="cart-row"><span>${esc(p?.name||"Produit")}<br><b>${euro((p?.price||0)*q)}</b></span><span class="qty"><button type="button" onclick="changeQty(${id},-1)">−</button>${q}<button type="button" onclick="changeQty(${id},1)">+</button></span></div>`}).join(""):'<p class="notice">Votre panier est vide pour le moment.</p>';document.getElementById("total").textContent=euro(sum);}
+document.getElementById("orderForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!Object.keys(cart).length){toast("Votre panier est vide");return}
+  const submitButton=e.target.querySelector('button[type="submit"]');
+  submitButton.disabled=true;submitButton.textContent="ENVOI EN COURS…";
+  const order={
+    customerName:document.getElementById("customer").value.trim(),
+    phone:document.getElementById("phone").value.trim(),
+    address:"À convenir par téléphone",
+    when:document.getElementById("when").value,
+    payment:document.getElementById("payment").value,
+    notes:document.getElementById("notes").value.trim(),
+    items:Object.entries(cart).map(([id,q])=>{const p=products.find(x=>x.id==id);return {name:p.name,price:Number(p.price),qty:q}}),
+    total:Object.entries(cart).reduce((sum,[id,q])=>sum+(Number(products.find(p=>p.id==id)?.price)||0)*q,0),
+    status:"Nouvelle"
+  };
+  try{
+    const db=await getFirebaseDb();
+    const {collection,addDoc,serverTimestamp}=await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+    const saved=await addDoc(collection(db,"orders"),{...order,createdAt:serverTimestamp()});
+    cart={};renderCart();e.target.classList.add("hidden");
+    const c=document.getElementById("confirmation");c.classList.remove("hidden");
+    c.innerHTML=`<h3>Merci ${esc(order.customerName)} !</h3><p>Votre commande a bien été transmise.</p><p>Référence : <b>${esc(saved.id.slice(-6).toUpperCase())}</b></p><p>Total : <b>${euro(order.total)}</b></p><p>Nous vous contacterons au numéro indiqué pour confirmer la livraison et le paiement.</p><button class="secondary" onclick="location.reload()">Nouvelle commande</button>`;
+  }catch(err){
+    console.error("Erreur Firebase:",err);
+    toast("Envoi impossible : vérifiez la connexion et les règles Firebase");
+    submitButton.disabled=false;submitButton.textContent="ENVOYER MA COMMANDE";
+  }
+});
+function showAdmin(){document.getElementById("shop").style.display="none";document.getElementById("admin").classList.add("active");renderAdmin();window.scrollTo(0,0)}
+function showShop(){document.getElementById("shop").style.display="block";document.getElementById("admin").classList.remove("active");window.scrollTo(0,0)}
+function renderAdmin(){let orders=JSON.parse(localStorage.getItem("lg_orders")||"[]");document.getElementById("orders").innerHTML=orders.length?orders.map(o=>`<div class="admin-card"><div style="display:flex;justify-content:space-between;gap:10px"><b>Commande #${o.id.toString().slice(-6)} · ${esc(o.customer)}</b><span class="status">${esc(o.status)}</span></div><p class="notice">${esc(o.date)} · ${esc(o.phone)}<br>Livraison : ${esc(o.address)}<br>${esc(o.payment)}</p><p>${o.items.map(i=>esc(i.name)+" × "+i.qty).join("<br>")}</p><b>${euro(o.total)}</b><p class="notice">${esc(o.notes||"")}</p><select onchange="setStatus(${o.id},this.value)">${["Nouvelle","Confirmée","En préparation","En livraison","Livrée","Annulée"].map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}</select></div>`).join(""):'<p class="notice">Aucune commande pour le moment.</p>';
+document.getElementById("editProducts").innerHTML=products.map(p=>`<div class="admin-card"><div class="fields"><div><label>Nom</label><input id="pn${p.id}" value="${esc(p.name)}"></div><div><label>Prix (€)</label><input id="pp${p.id}" type="number" min="0" step=".01" value="${p.price}"></div><div class="full"><label>Description</label><input id="pd${p.id}" value="${esc(p.desc||"")}"></div></div><p><button class="secondary" onclick="updateProduct(${p.id})">Enregistrer</button> <button class="secondary" onclick="deleteProduct(${p.id})">Supprimer</button></p></div>`).join("");}
+function setStatus(id,status){let a=JSON.parse(localStorage.getItem("lg_orders")||"[]");a=a.map(o=>o.id===id?{...o,status}:o);localStorage.setItem("lg_orders",JSON.stringify(a));renderAdmin();}
+function updateProduct(id){let p=products.find(x=>x.id===id);p.name=document.getElementById("pn"+id).value;p.price=Number(document.getElementById("pp"+id).value);p.desc=document.getElementById("pd"+id).value;saveProducts();renderProducts();renderAdmin();toast("Produit mis à jour");}
+function deleteProduct(id){if(!confirm("Supprimer ce produit ?"))return;products=products.filter(p=>p.id!==id);saveProducts();renderProducts();renderAdmin();}
+function addProduct(){let id=Date.now();products.push({id,name:"Nouveau produit",desc:"Description à compléter",price:0,emoji:"🥪"});saveProducts();renderProducts();renderAdmin();}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";setTimeout(()=>t.style.display="none",1800)}
+renderProducts();renderCart();
+</script>
+</body></html>
